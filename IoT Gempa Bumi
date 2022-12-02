@@ -1,0 +1,150 @@
+
+#define BLYNK_TEMPLATE_ID "TMPLcoFGFCUQ"
+#define BLYNK_DEVICE_NAME "ResponsiSem1"
+#define BLYNK_AUTH_TOKEN "NCInLr014aDy5MNTZA0N_o12lguD9ulo"
+
+#define BLYNK_PRINT Serial
+
+
+#include <WiFi.h>
+#include <WiFiClient.h>
+#include <BlynkSimpleEsp32.h>
+#include <Adafruit_MPU6050.h>
+#include <Adafruit_Sensor.h>
+#include <Wire.h>
+
+char auth[] = BLYNK_AUTH_TOKEN;
+
+
+char ssid[] = "Wokwi-GUEST";
+char pass[] = "";
+
+BlynkTimer timer;
+
+void myTimerEvent()
+{
+  Blynk.virtualWrite(V2, millis() / 1000);
+}
+
+int buzzer = 23;
+int ledmerah = 2;
+int ledhijau = 4;
+
+Adafruit_MPU6050 mpu;
+
+void setup(void) {
+  Serial.begin(115200);
+  Blynk.begin(auth, ssid, pass);
+  
+  while (!mpu.begin()) {
+    Serial.println("SENSOR TIDAK TERHUBUNG!");
+    delay(1000);
+  }
+    Serial.println("====================SENSOR ON!===================");
+    Serial.println("SENSOR DETEKSI GEMPA BUMI");
+    Serial.println("5200411479");
+    Serial.println("CORNELLIUS AGOVA MADU PUTERA");
+    Serial.println("====================SENSOR ON!===================");
+
+    delay(3000);
+    mpu.setAccelerometerRange(MPU6050_RANGE_16_G);
+    mpu.setGyroRange(MPU6050_RANGE_250_DEG);
+    mpu.setFilterBandwidth(MPU6050_BAND_21_HZ);
+
+  Serial.println("");
+
+  pinMode(buzzer, OUTPUT);
+  pinMode(ledmerah, OUTPUT);
+  pinMode(ledhijau, OUTPUT);
+}
+sensors_event_t event;
+void loop() {
+  sensors_event_t a, g, temp;
+  mpu.getEvent(&a, &g, &temp);
+
+  int accelerationx=a.acceleration.x;
+  int accelerationy=a.acceleration.y;
+  int accelerationz=a.acceleration.z;
+
+  int gyrox=g.gyro.x;
+  int gyroy=g.gyro.y;
+  int gyroz=g.gyro.z;
+
+  int temperatur=temp.temperature;
+
+if (g.gyro.x == 0 && g.gyro.y == 0 && g.gyro.z == 0 && a.acceleration.x == 0 && a.acceleration.y == 0 ){
+  Serial.print("Situasi dalam kondisi aman");
+  Blynk.virtualWrite(V0, "Situasi dalam kondisi aman 🧘‍♂️ 🧘‍♂️ 🧘‍♂️");
+  Blynk.virtualWrite(V1, g.gyro.y);
+  Serial.println("");
+  Serial.print("Acceleration X: ");
+  Serial.print(a.acceleration.x);
+  Serial.print(", Y: ");
+  Serial.print(a.acceleration.y);
+  Serial.print(", Z: ");
+  Serial.print(a.acceleration.z);
+  Serial.println(" m/s²");
+
+  Serial.print("Rotation X    : ");
+  Serial.print(g.gyro.x);
+  Serial.print(", Y: ");
+  Serial.print(g.gyro.y);
+  Serial.print(", Z: ");
+  Serial.print(g.gyro.z);
+  Serial.println(" °/sec");
+
+  Serial.print("Temperature   : ");
+  Serial.print(temp.temperature);
+  Serial.println(" °C");
+
+  tone(buzzer,0);
+
+  digitalWrite(ledhijau, HIGH);
+  digitalWrite(ledmerah, LOW);
+  Serial.println("========================== STATUS ========================== ");
+  delay(1000);
+}else{
+  Serial.print("Telah terjadi gempa bumi, harap mencari tempat yang aman");
+  Blynk.virtualWrite(V0, "Telah terjadi gempa bumi 🏃🏃🏃");
+  Blynk.virtualWrite(V1, accelerationx);
+  Blynk.virtualWrite(V2, accelerationy);
+  Blynk.virtualWrite(V3, accelerationz);
+
+  Blynk.virtualWrite(V4, gyrox);
+  Blynk.virtualWrite(V5, gyrox);
+  Blynk.virtualWrite(V6, gyrox);
+
+  Blynk.virtualWrite(V7, temperatur);
+  Serial.println("");
+  Serial.print("Acceleration X: ");
+  Serial.print(a.acceleration.x);
+  Serial.print(", Y: ");
+  Serial.print(a.acceleration.y);
+  Serial.print(", Z: ");
+  Serial.print(a.acceleration.z);
+  Serial.println(" m/s²");
+
+  Serial.print("Rotation X    : ");
+  Serial.print(g.gyro.x);
+  Serial.print(", Y: ");
+  Serial.print(g.gyro.y);
+  Serial.print(", Z: ");
+  Serial.print(g.gyro.z);
+  Serial.println(" °/sec");
+
+  Serial.print("Temperature   : ");
+  Serial.print(temp.temperature);
+  Serial.println(" °C");
+  Serial.println("XXXXXXXXXXXXXXXXXXXXXXXXXX STATUS DARURAT XXXXXXXXXXXXXXXXXXXXXXXXXX ");
+
+  tone(buzzer,300);
+
+  digitalWrite(ledhijau, LOW);
+  digitalWrite(ledmerah, HIGH);
+  delay(500);
+  digitalWrite(ledmerah, LOW);
+  delay(500);
+  digitalWrite(ledmerah, HIGH);
+  }
+  Blynk.run();
+}
